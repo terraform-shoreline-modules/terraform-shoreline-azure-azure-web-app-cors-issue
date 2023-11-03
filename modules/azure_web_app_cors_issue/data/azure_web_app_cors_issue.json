@@ -1,0 +1,122 @@
+{
+  "name": "azure_web_app_cors_issue",
+  "description": "Cross-Origin Resource Sharing (CORS) issues can occur when a web application tries to make requests to a different domain than the one it originated from. This can lead to unexpected behavior, security errors, or blocked API calls. CORS issues can prevent web pages from functioning properly and can be a common issue for web developers and software engineers.",
+  "params": [
+    {
+      "name": "NSG_NAME",
+      "value": ""
+    },
+    {
+      "name": "CLIENT_DOMAIN",
+      "value": ""
+    },
+    {
+      "name": "CERTIFICATE_NAME",
+      "value": ""
+    },
+    {
+      "name": "WEB_APP_NAME",
+      "value": ""
+    },
+    {
+      "name": "RESOURCE_GROUP_NAME",
+      "value": ""
+    },
+    {
+      "name": "NSG_RULE_NAME",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Azure Web App CORS Issue\nCross-Origin Resource Sharing (CORS) issues can occur when a web application tries to make requests to a different domain than the one it originated from. This can lead to unexpected behavior, security errors, or blocked API calls. CORS issues can prevent web pages from functioning properly and can be a common issue for web developers and software engineers."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the web app is running"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `az webapp show --name ${WEB_APP_NAME} --resource-group ${RESOURCE_GROUP_NAME} --query state`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the web app's logs reveal any CORS-related errors"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `az webapp log tail --name ${WEB_APP_NAME} --resource-group ${RESOURCE_GROUP_NAME}`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the web app's SSL certificate is valid and installed correctly"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `az webapp config ssl show --certificate-name ${CERTIFICATE_NAME} --resource-group ${RESOURCE_GROUP_NAME}`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the web app's network traffic is being blocked by a firewall"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `az network nsg rule show --resource-group ${RESOURCE_GROUP_NAME} --nsg-name ${NSG_NAME} --name ${NSG_RULE_NAME}`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if CORS is enabled on the web app"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `az webapp cors show --name ${WEB_APP_NAME} --resource-group ${RESOURCE_GROUP_NAME}`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Update and ensure that the correct headers are being set. Specifically, the Access-Control-Allow-Origin header should be set to allow requests from the client's domain."
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_cors_header_update($CLIENT_DOMAIN, $WEB_APP_NAME, $RESOURCE_GROUP_NAME)"
+    }
+  ]
+}
